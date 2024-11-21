@@ -3,7 +3,7 @@ import java.net.*;
 
 public class FileServer {
     public static void main(String[] args) throws UnknownHostException, IOException {
-        
+        final int PORT = 9090;
         // check for valid command line 
         if (args.length != 1) {
             System.out.println("Invalid command: Please enter in the format");
@@ -21,7 +21,7 @@ public class FileServer {
         }
 
         // create a socket that is looking for incoming connections
-        try (ServerSocket server = new ServerSocket(9090)){
+        try (ServerSocket server = new ServerSocket(PORT)){
             System.out.println("Server has begun looking for clients...");
             while (true) {
                 try {
@@ -50,23 +50,54 @@ public class FileServer {
 
         @Override
         public void run() {
-            try {
-                // writing to the client
-                PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
-                out.println("From Server: Successful connection with the client!");
+            try (PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
 
-                // reading from the client
-                InputStreamReader read = new InputStreamReader(connection.getInputStream());
-                BufferedReader in = new BufferedReader(read);
-                String clientResponse = in.readLine();
-                System.out.println(clientResponse);
+                // to continuosly read in commands from the client, i need a while loop that stores the curr command
+                String command;
+                while( (command = in.readLine()) != null ){ 
+                    if (command.equalsIgnoreCase("index")){
+                        // first we need to access the files inside the directory
+                        String[] files = directory.list();
+                        if (files != null){
+                            for (String file : files){
+                                // send each file in the array to client
+                                out.println(file);
+                            }
+                            out.println("eol");
+                        }
+                        else {
+                            out.println("error: directory does not exist");
+                        }
+                    }
+                    else if (command.equalsIgnoreCase("get ")){
+                        String filename = command.substring(4).trim();
+                        File selectedFile = new File(directory,filename);
 
-                // Take in the command from Client
-                String clientCommand = in.readLine();
-                System.out.println(clientCommand);
-
-                // close all connections
-                connection.close();
+                        if (selectedFile.exists() && selectedFile.isFile()){
+                            out.println("ok");
+                            // read file from server and send to client
+                            try (BufferedReader fileReader = new BufferedReader(new FileReader(selectedFile))) {
+                                String line;
+                                while ((line = fileReader.readLine()) != null) {
+                                    out.println(line);
+                                }
+                            } 
+                            catch (Exception e) {
+                                System.err.println(e.toString());
+                            }
+                            out.println("eof");
+                        }
+                        else {
+                            // file does not exists
+                            out.println("error");
+                            break;
+                        }
+                    }
+                    else {
+                        out.println("Invalid command: Please enter 'index' or 'get <filename>'");
+                    }
+                }
             } 
             catch (IOException e) {
                 System.err.println(e.toString());

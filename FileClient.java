@@ -3,28 +3,52 @@ import java.net.*;
 
 public class FileClient {
     public static void main(String[] args) {
-        // initiate the connection to the server
-        try (Socket socket = new Socket("localhost",9090)){
+        // need to retrieve serverAddress from command line
+        if (args.length < 1) {
+            System.out.println("Usage: java Client <server-address>");
+            return;
+        }
+        String serverAddress = args[0];
+        final int PORT = 9090;
 
-            socket.setSoTimeout(15000);
-        
+        // start the connection to the server
+        try (Socket socket = new Socket(serverAddress,PORT);
             // writing to the server
             PrintWriter out = new PrintWriter(socket.getOutputStream(),true);
-            out.println("From Client: Hello server!");
-        
             // reading from the server
-            InputStreamReader read = new InputStreamReader(socket.getInputStream());
-            BufferedReader in = new BufferedReader(read);
-            String serverResponse = in.readLine();
-            System.out.println(serverResponse);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            // reading from the user to the client
+            BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in))) {
+
+            socket.setSoTimeout(10000); // recommended timeout
         
-            // read in command from the user
-            BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("Please enter: index or get <filename>");
-            String command = consoleInput.readLine().trim();
-            
-            // send the command to server
-            out.println("You have chosen: " + command); // why doesn't this work??
+            // writing to the server
+            System.out.println("Successful connection!");
+            System.out.println("Type 'index' or 'get <filename>'");
+        
+            String command;
+            while (true) { 
+                command = consoleInput.readLine().trim();
+                if (command.isEmpty()){
+                    System.out.println("no input, goodbye...");
+                    socket.close();
+                    System.out.println("the connection is closed: " + socket.isClosed());
+                    break;
+                }
+                else {
+                    // send the command back to the server
+                    System.out.println("you have selected: " + command);
+                    out.println(command);
+                    String response;
+                    while ((response = in.readLine()) != null) {
+                        if (response.equals("eol") || response.equals("eof")){
+                            System.out.println("you have reached the end of the list: Please selected another option or press enter to exit");
+                            break;
+                        }
+                        System.out.println(response);
+                    }
+                }
+            }
 
         }
         catch (IOException e){
