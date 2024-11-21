@@ -11,8 +11,10 @@ public class FileServer {
             return;
         }
 
-        // check if file exists and is inside directory
+        // User gives server a directory
         File directory = new File(args[0]);
+        
+        // Server must check validity of directory 
         if (!directory.exists() || !directory.isDirectory()) {
             System.out.println("Invalid directory!");
             return;
@@ -20,12 +22,13 @@ public class FileServer {
 
         // create a socket that is looking for incoming connections
         try (ServerSocket server = new ServerSocket(9090)){
-        System.out.println("Server has begun looking for client...");
+            System.out.println("Server has begun looking for clients...");
             while (true) {
                 try {
                     // attempt to connect with the client
                     Socket connection = server.accept();
-                    Thread task1 = new FileThread(connection);
+                    // start the logic with the socket
+                    Thread task1 = new FileThread(connection, directory);
                     task1.start();
                 } 
                 catch (IOException e) {
@@ -37,10 +40,12 @@ public class FileServer {
     }
 
     private static class FileThread extends Thread {
-        private Socket connection;
+        private final Socket connection;
+        private final File directory;
 
-        FileThread(Socket connection){
+        public FileThread(Socket connection, File directory){
             this.connection = connection;
+            this.directory = directory;
         }
 
         @Override
@@ -48,13 +53,17 @@ public class FileServer {
             try {
                 // writing to the client
                 PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
-                out.println("Successful connection!");
+                out.println("From Server: Successful connection with the client!");
 
                 // reading from the client
                 InputStreamReader read = new InputStreamReader(connection.getInputStream());
                 BufferedReader in = new BufferedReader(read);
                 String clientResponse = in.readLine();
                 System.out.println(clientResponse);
+
+                // Take in the command from Client
+                String clientCommand = in.readLine();
+                System.out.println(clientCommand);
 
                 // close all connections
                 connection.close();
