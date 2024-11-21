@@ -1,0 +1,90 @@
+Sockets for Clients
+- Data is transmitted across the internet of finite size called datagrams
+- Datagrams hold a header and a payload
+- Sockets allow porgrams to treat connections as an input/output stream
+
+What is a socket?
+- a socket is a connection between two hosts
+
+Seven Basic Functions of a Socket
+- connect to a remote machine
+- send data
+- receive data
+- close a connection
+- bind to a port
+- listen for incoming data
+- accept connections from remote machines on a bound port
+
+Java's Socket class can perform the first four Functions
+Java's ServerSocket class can perform all seven
+
+Reading from Servers with Sockets
+- Let's say that we want to get the time from a server at NIST
+- According to NIST's protocal (RFC867), we can send a request like this
+    - telnet time.nist.gov 13
+
+How to do it in Java:
+    Socket socket = new Socket("time.nist.gov",13);
+* this initialization actually makes the connection as well as creating a socket object
+* therefore if there is an error such as connection timeout or wrong port
+* the code returns an IOException
+
+How do to do it BETTER in Java:
+    try (Socket socket = new Socket("time.nist.gove",13)){
+        // do some logic here
+    }
+    catch (IOException e){
+        System.err.println(e.toString()); // or some better error statement
+    }
+
+Timeout (Highly Recommended)
+- Although a socket can throw a ConnecException or NoRouteToHostException
+- Any other unique error would confuse the server constantly waiting for a connection
+- Set a timeout so the socket can limit itself to only a couple seconds per operation
+    socket.setSoTimeout(15000); // unit of time is milliseconds
+
+Logic Inside the Socket Connection
+- to read from a socket, used an InputStream object 
+- we can use an InputStreamReader to convert the bytes into ASCII
+
+Writing to Servers with Sockets
+- pretty similar to reading with a socket
+
+How to do it in Java
+    try (Socket socket = new Socket(ServerAddress,PortNumber)){
+        socket.setSoTimeout(15000);
+        OutputStream out = socket.getOutputStream();
+        Writer writer = new OutputStreamWriter(out,"UTF-8");
+        writer = new BufferedWriter(writer);
+
+        InputStream in = socket.getInputStream();
+        BufferedReader reader - new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        // some  logic here
+        writer.write("Bye Bye");
+        writer.flush(); // flush the buffer
+    }
+    catch (IOException e){
+        System.err.println(e.toString());
+    }
+
+Constructing and Connecting Sockets
+- java.net.Socket class is the optimal class for performing client-side TCP operations
+
+Basic Constructors
+- public Sockets(String host, int port) throws UnknownHostException, IOException
+- public Sockets(InetAddress host, int port) throws IOException
+
+These constructors are great because they account for common problems
+
+Getting Information about a Socket
+- Socket objects contain 4 main getter methods to get certain properties
+    - public InetAddress getInetAddress() // remote address 
+    - public int getPort() // remote port
+    - public InetAddress getLocalAddress() // local address
+    - public int getLocalPort() // local port
+
+Checking if a Socket is Closed / Connected
+- isClosed() method returns true if a socket is closed
+- isConnected() returns true if the socket has been connected 
+    - however its only if its been connected once or not -> not representative of current state 
+

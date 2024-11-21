@@ -1,0 +1,41 @@
+Sockets for Servers
+- A ServerSocket runs on a server and waits for incoming TCP connections
+- Each ServerSocket runs on a particular port
+- A client attempts to connect to that same port and the ServerSocket opens that connections
+- and a socket object is born
+- Data is sent and received on that socket object
+
+Using ServerSockets
+
+Basic Uses for a Server Program
+1. A new ServerSocket is created on a port using a ServerSocket constructor
+2. The ServerSocket listens for an incoming connection attempt using the accept method
+    - the accept method returns a socket object connecting the client and the server
+3. The Socket's input/output streams get called to communicate with the client
+4. The server and client interact according an agreed upon protocol 
+5. The server or client tries to close the connection
+6. the server goes back to waiting for an attempt to connect to its port
+
+Basic Syntax
+    ServerSocket server = new ServerSocket(PortNumber);
+    try (Socket connection = server.accept()) {
+        OutputStream out = connection.getOutputStream();
+        Writer writer = new OutputStreamWriter(out,"ASCII");
+        writer.write(someString);
+        writer.flush();
+    } 
+    catch (IOException e) {
+        System.err.println(e.toString());
+    } 
+    finally {
+        try {
+            if (server != null) server.close();
+        }
+        catch (IOException e) {
+            System.err.println(e.toString());
+        } 
+    }
+
+// servers and clients have to be able to close their connections
+
+Writing to Servers with Sockets
