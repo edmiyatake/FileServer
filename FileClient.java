@@ -13,8 +13,10 @@ public class FileClient {
         out.println("Hello server!");
         
         // reading from the server
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        System.out.println(in.readLine());
+        InputStreamReader read = new InputStreamReader(socket.getInputStream());
+        BufferedReader in = new BufferedReader(read);
+        String serverResponse = in.readLine();
+        System.out.println(serverResponse);
 
 
         // InputStream in = socket.getInputStream();
