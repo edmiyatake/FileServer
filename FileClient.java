@@ -42,11 +42,11 @@ public class FileClient {
                     String response;
                     while ((response = in.readLine()) != null) {
                         if (response.equals("eol") || response.equals("eof")){
-                            System.out.println("you have reached the end of the list: Please selected another option or press enter to exit");
                             break;
                         }
                         System.out.println(response);
                     }
+                    System.out.println("you have reached the end of the list: Please selected another option or press enter to exit");
                 }
             }
 

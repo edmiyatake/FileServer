@@ -70,7 +70,7 @@ public class FileServer {
                             out.println("error: directory does not exist");
                         }
                     }
-                    else if (command.equalsIgnoreCase("get ")){
+                    else if (command.startsWith("get ")){
                         String filename = command.substring(4).trim();
                         File selectedFile = new File(directory,filename);
 
