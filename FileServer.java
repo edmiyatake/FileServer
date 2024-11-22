@@ -53,53 +53,58 @@ public class FileServer {
             try (PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
 
-                // to continuosly read in commands from the client, i need a while loop that stores the curr command
+                // doesn't need to be a loop just needs to open the connection until a command is given
+                // receive the command from the client
                 String command;
-                while( (command = in.readLine()) != null ){ 
-                    if (command.equalsIgnoreCase("index")){
-                        // first we need to access the files inside the directory
-                        String[] files = directory.list();
-                        if (files != null){
-                            for (String file : files){
-                                // send each file in the array to client
-                                out.println(file);
-                            }
-                            out.println("eol");
-                        }
-                        else {
-                            out.println("error: directory does not exist");
-                        }
-                    }
-                    else if (command.startsWith("get ")){
-                        String filename = command.substring(4).trim();
-                        File selectedFile = new File(directory,filename);
+                command = in.readLine(); 
 
-                        if (selectedFile.exists() && selectedFile.isFile()){
-                            out.println("ok");
-                            // read file from server and send to client
-                            try (BufferedReader fileReader = new BufferedReader(new FileReader(selectedFile))) {
-                                String line;
-                                while ((line = fileReader.readLine()) != null) {
-                                    out.println(line);
-                                }
-                            } 
-                            catch (Exception e) {
-                                System.err.println(e.toString());
-                            }
-                            out.println("eof");
+                if (command.equalsIgnoreCase("index")) {
+                    // first we need to access the files inside the directory
+                    String[] files = directory.list();
+                    if (files != null){
+                        for (String file : files){
+                                // send each file in the array to client
+                            out.println(file);
                         }
-                        else {
-                            // file does not exists
-                            out.println("error");
-                            break;
-                        }
+                        out.println("eol");
                     }
                     else {
-                        out.println("Invalid command: Please enter 'index' or 'get <filename>'");
+                        out.println("error: directory does not exist");
                     }
                 }
-            } 
+                else if (command.startsWith("get ")) {
+                    String filename = command.substring(4).trim();
+                    System.out.println(filename);
+                    File selectedFile = new File(directory,filename);
+
+                    if (selectedFile.exists() && selectedFile.isFile()){
+                        out.println("ok");
+                        // read file from server and send to client
+                        try (BufferedReader fileReader = new BufferedReader(new FileReader(selectedFile))) {
+                            String line;
+                            while ((line = fileReader.readLine()) != null) {
+                                out.println(line);
+                            }
+                        } 
+                        catch (Exception e) {
+                            System.out.print("1. This statement is running");
+                            System.err.println(e.toString());
+                        }
+                        out.println("eof");
+                    }
+                    else {
+                        // file does not exists, this statement is compiling correctly
+                        // System.out.println("ERROR");
+                        out.println("error");
+                    }
+                }
+                else {
+                    out.println("Invalid command: Please try again");
+                }
+            }
+            
             catch (IOException e) {
+                System.out.println("2. This error statement is running");
                 System.err.println(e.toString());
             } 
             finally {
@@ -107,6 +112,7 @@ public class FileServer {
                     connection.close();
                 }
                 catch (IOException e) {
+                    System.out.println("3. This error statement is running");
                     System.err.println(e.toString());
                 } 
             }

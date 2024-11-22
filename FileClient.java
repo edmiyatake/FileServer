@@ -23,35 +23,25 @@ public class FileClient {
             socket.setSoTimeout(10000); // recommended timeout
         
             // writing to the server
-            System.out.println("Successful connection!");
+            // System.out.println("Successful connection!");
             System.out.println("Type 'index' or 'get <filename>'");
         
-            String command;
-            while (true) { 
-                command = consoleInput.readLine().trim();
-                if (command.isEmpty()){
-                    System.out.println("no input, goodbye...");
-                    socket.close();
-                    System.out.println("the connection is closed: " + socket.isClosed());
+            // get command from user
+            String command; 
+            command = consoleInput.readLine().trim();
+            
+            //System.out.println("you have selected: " + command);
+            out.println(command);
+
+            String response;
+            while ((response = in.readLine()) != null) {
+                if (response.equals("eol") || response.equals("eof")){
                     break;
                 }
-                else {
-                    // send the command back to the server
-                    System.out.println("you have selected: " + command);
-                    out.println(command);
-                    String response;
-                    while ((response = in.readLine()) != null) {
-                        if (response.equals("eol") || response.equals("eof")){
-                            break;
-                        }
-                        System.out.println(response);
-                    }
-                    System.out.println("you have reached the end of the list: Please selected another option or press enter to exit");
-                }
+                System.out.println(response);
             }
-
         }
-        catch (IOException e){
+        catch (IOException e) {
             System.err.println(e.toString());
         }
     }
